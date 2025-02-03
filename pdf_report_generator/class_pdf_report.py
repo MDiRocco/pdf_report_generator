@@ -1,7 +1,5 @@
 """Class for the PDF Generator."""
 import logging
-from pathlib import Path
-
 from fpdf import FPDF
 
 PAGE_SIZE = (210, 297)
@@ -17,24 +15,40 @@ class PDF(FPDF):
         FPDF (_type_): _description_
     """
 
+    def set_logo_dx(self, logo_info):
+        "Logo on theright."
+        self.logo_dx = logo_info[0]
+        self.logo_dx_x = logo_info[1]
+        self.logo_dx_y = logo_info[2]
+        self.logo_dx_w = logo_info[3]
+        self.logo_dx_h = logo_info[4]
+
+    def set_logo_sx(self, logo_info):
+        "Logo on the left."
+        self.logo_sx = logo_info[0]
+        self.logo_sx_x = logo_info[1]
+        self.logo_sx_y = logo_info[2]
+        self.logo_sx_w = logo_info[3]
+        self.logo_sx_h = logo_info[4]
+
     def header(self):
         """Create Header of the file."""
-        # Logo
-        config_folder_path = Path(__file__).parent / 'texts'
-
+        # Logo on the right
         self.image(
-            name=str(config_folder_path / 'logo_ctl.png'),
-            x=self.w - 35,
-            y=5,
-            w=25,
-            h=25,
+            name=str(self.logo_dx),
+            x=self.w - self.logo_dx_x,
+            y=self.logo_dx_y,
+            w=self.logo_dx_w,
+            h=self.logo_dx_h,
         )
+
+        # Logo on the left
         self.image(
-            name=str(config_folder_path / 'Logo_ASTRAL2.jpg'),
-            x=10,
-            y=7,
-            w=40,
-            h=20,
+            name=str(self.logo_sx),
+            x=self.logo_sx_x,
+            y=self.logo_sx_y,
+            w=self.logo_sx_w,
+            h=self.logo_sx_h,
         )
         # Arial bold 15
         self.set_font('Arial', 'B', 15)
@@ -103,7 +117,6 @@ class PDF(FPDF):
         # self.ln()
 
         for key in data_info:
-
             df = data_info[key]['df']
             df_label = data_info[key]['label']
             table_limit = data_info[key]['table_limit']

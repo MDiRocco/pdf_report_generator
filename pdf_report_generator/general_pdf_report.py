@@ -20,62 +20,81 @@ def data_preparation(config_pathfile: Path, output: Path, text_content: Path):
         text_content (Path): Path to the text and image to print
 
     """
-    chp_content = text_content['chp_1']
-    chp_number = chp_content['number']
-    data_info = {}
-    for idx, table_content in enumerate(chp_content['data_to_load']):
-        table = chp_content['data_to_load'][table_content]
-
-        table_filename = output / table['filename']
-        table_label = table['label']
-        table_filter = table['columns_to_filter']
-        table_limit = table['table_limit']
-        df_data = pd.read_csv(table_filename, decimal=',').round(1)
-        table_one_col_rename = table['columns_to_rename']
-
-        tab_one = df_data.loc[:, table_filter]
-        # tab_one['Veicoli'] = tab_one['Veicoli'].astype(int)
-        tab_one.rename(columns=table_one_col_rename, inplace=True)
-
-        data_info[idx] = {
-            'df': tab_one,
-            'label': table_label,
-            'table_limit': table_limit,
-        }
-
-    if chp_content['image_to_print']:
-        image_info = {}
-        for _, img in enumerate(chp_content['image_to_print']):
-            img_data = chp_content['image_to_print'][img]
-
-            df_data.set_index(img_data['set_index'], inplace=True)
-            df_data.loc[
-                :, img_data['columns_to_filter'],
-            ].plot(grid=True)
-            plt.xlabel('')
-            plt.ylabel('%', rotation='horizontal')
-            plt.xticks(fontsize=7)
-            plt.savefig(output / img_data['save_img'])
-
-            image_info[img] = {
-                'filename': output / img_data['save_img'],
-                'label': img_data['label'],
-                'size': img_data['size'],
-            }
-            df_data.reset_index(inplace=True)
-
     pdf = PDF()
 
     pdf.set_title(f"{text_content['FILE_TITLE']}.pdf")
+    pdf.set_logo_dx(
+        [
+            Path(__file__).parent / 'texts' / text_content['logo_dx'],
+            35,
+            5,
+            25,
+            25,
+        ]
 
-    pdf.print_chapter(
-        chp_number,
-        chp_content['title'],
-        config_pathfile / chp_content['text'],
-        data_info,
-        image_info=image_info,
     )
-    # --------------------------------------------------------------------------------------------------------------------------------
+    pdf.set_logo_sx(
+        [
+            Path(__file__).parent / 'texts' / text_content['logo_sx'],
+            10,
+            7,
+            40,
+            20,
+        ],
+    )
+
+    for chapter in text_content['chps']:
+        chp_content = text_content['chps'][chapter]
+        chp_number = chp_content['number']
+        data_info = {}
+        for idx, table_content in enumerate(chp_content['data_to_load']):
+            table = chp_content['data_to_load'][table_content]
+
+            table_filename = output / table['filename']
+            table_label = table['label']
+            table_filter = table['columns_to_filter']
+            table_limit = table['table_limit']
+            df_data = pd.read_csv(table_filename, decimal=',').round(1)
+            table_one_col_rename = table['columns_to_rename']
+
+            tab_one = df_data.loc[:, table_filter]
+            # tab_one['Veicoli'] = tab_one['Veicoli'].astype(int)
+            tab_one.rename(columns=table_one_col_rename, inplace=True)
+
+            data_info[idx] = {
+                'df': tab_one,
+                'label': table_label,
+                'table_limit': table_limit,
+            }
+
+        if 'image_to_print' in chp_content:
+            image_info = {}
+            for img in chp_content.get('image_to_print'):
+                img_data = chp_content.get('image_to_print').get(img)
+
+                df_data.set_index(img_data['set_index'], inplace=True)
+                df_data.loc[
+                    :, img_data['columns_to_filter'],
+                ].plot(grid=True)
+                plt.xlabel('')
+                plt.ylabel('%', rotation='horizontal')
+                plt.xticks(fontsize=7)
+                plt.savefig(output / img_data['save_img'])
+
+                image_info[img] = {
+                    'filename': output / img_data['save_img'],
+                    'label': img_data['label'],
+                    'size': img_data['size'],
+                }
+                df_data.reset_index(inplace=True)
+
+        pdf.print_chapter(
+            chp_number,
+            chp_content['title'],
+            config_pathfile / chp_content['text'],
+            data_info,
+            image_info=image_info,
+        )
 
     pdf.output(output / text_content['FILE_TITLE'], 'F')
 
