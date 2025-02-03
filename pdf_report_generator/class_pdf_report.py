@@ -47,7 +47,6 @@ class PDF(FPDF):
         # Colors of frame, background and text
         # self.set_draw_color(0, 80, 180)
         # self.set_fill_color(230, 230, 0)
-        # self.set_text_color(220, 50, 50)
         # Thickness of frame (1 mm)
         self.set_line_width(0.1)
         # Title
@@ -102,7 +101,6 @@ class PDF(FPDF):
         self.multi_cell(w=0, h=5, txt=txt.encode('utf-8').decode('latin-1'), align='J')
         # Line break
         # self.ln()
-        # table_limit = [47, 11]
 
         for key in data_info:
 
@@ -126,8 +124,7 @@ class PDF(FPDF):
                     self.cell(w=table_limit[0], h=table_limit[1], txt=str(row_data), border=1, align='C')
                 self.ln()
         self.ln()
-        # self.set_font('', 'BUI')
-        # self.ln(4)
+
         if image_info:
             for _, image_x in enumerate(image_info):
                 filename = image_info[image_x]['filename']
